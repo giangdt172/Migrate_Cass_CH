@@ -1,0 +1,7 @@
+cassandra-driver
+sqlalchemy
+clickhouse-sqlalchemy
+python-dotenv
+click
+logging
+web3
