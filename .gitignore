@@ -12,7 +12,7 @@ parts/
 sdist/
 var/
 wheels/
-_pycache_/
+__pycache__/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
