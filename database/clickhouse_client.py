@@ -173,6 +173,34 @@ class ClickhouseClient:
                 TTL toDateTime(update_at) + INTERVAL 30 DAY
                 SETTINGS index_granularity = 8192;
             """)
+
+        logger.info("Creating internal_transactions table...")
+        self.execute_query(f"""
+            CREATE TABLE IF NOT EXISTS {self.database}.internal_transactions
+            (
+                block_number Int64,
+                hash String,
+                idx Int16,
+                contract_address Nullable(String),
+                err_code Nullable(String),
+                from_address Nullable(String),
+                gas Nullable(String),
+                gas_used Nullable(String),
+                input Nullable(String),
+                is_error Nullable(Int16),
+                to_address Nullable(String),
+                trace_id Nullable(String),
+                type Nullable(String),
+                update_at Datetime DEFAULT now(),
+                value Nullable(String)
+            )
+            ENGINE = ReplacingMergeTree()
+            PARTITION BY (block_number)
+            ORDER BY (block_number, hash, idx)
+            TTL toDateTime(update_at) + INTERVAL 30 DAY
+            SETTINGS index_granularity = 8192;
+        """)
+
     @staticmethod
     def handle_error(exception):
         logger.error(exception)
@@ -256,4 +284,9 @@ class ClickhouseClient:
         token_transfers = self.clean_cassandra_data(token_transfers)
         self.upsert_entities(token_transfers, 'token_transfer')
 
+    def upsert_internal_transactions(self, internal_transactions):
+        if not internal_transactions:
+            return
+        internal_transactions = self.clean_cassandra_data(internal_transactions)
+        self.upsert_entities(internal_transactions, 'internal_transactions')
 

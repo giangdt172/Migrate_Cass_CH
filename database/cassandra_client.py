@@ -107,3 +107,19 @@ class CassandraClient:
         response = self._session.execute(query).all()
         token_transfers = [token_transfer._asdict() for token_transfer in response]
         return token_transfers
+
+    def get_internal_transactions_data(self, numbers):
+        if not numbers:
+            return
+        bucket_ids = [str(round_timestamp(i, self.tx_partitions)) for i in numbers]
+        bucket_ids = set(bucket_ids)
+        string_buck_id = ','.join(bucket_ids)
+        string_numbers = ','.join(str(i) for i in numbers)
+        query = f"""
+                SELECT * FROM {self.keyspace}.internal_transactions
+                WHERE bucket_id IN ({string_buck_id})
+                AND block_number IN ({string_numbers});
+            """
+        response = self._session.execute(query).all()
+        internal_transactions = [internal_transaction._asdict() for internal_transaction in response]
+        return internal_transactions
