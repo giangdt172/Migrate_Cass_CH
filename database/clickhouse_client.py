@@ -87,7 +87,7 @@ class ClickhouseClient:
                     pass
             logger.warning(f'Failed to execute query: {query}')
             logger.exception(err)
-            return None
+            raise
 
     def init_schema(self):
         logger.info(f"Creating database: {self.database}")
@@ -220,7 +220,6 @@ class ClickhouseClient:
                 if key in fields_to_remove:
                     continue
                     
-                # Handle field name mapping and type conversion
                 if key in ['number', 'timestamp', 'transaction_count', 'block_number']:
                     if value is not None:
                         cleaned_record[key] = int(value)
@@ -259,33 +258,39 @@ class ClickhouseClient:
         except Exception as e:
             logger.warning(f'Failed to insert data into ClickHouse table {table}')
             logger.exception(e)
+            raise
 
     def upsert_blocks(self, blocks):
-        if not blocks:
+        if not blocks or blocks == []:
+            logger.warning('No blocks to upsert')
             return
         blocks = self.clean_cassandra_data(blocks)
         self.upsert_entities(blocks, 'blocks')
     
     def upsert_transactions(self, transactions):
-        if not transactions:
+        if not transactions or transactions == []:
+            logger.warning('No transactions to upsert')
             return
         transactions = self.clean_cassandra_data(transactions)
         self.upsert_entities(transactions, 'transactions')
 
     def upsert_logs(self, logs):
-        if not logs:
+        if not logs or logs == []:
+            logger.warning('No logs to upsert')
             return
         logs = self.clean_cassandra_data(logs)
         self.upsert_entities(logs, 'logs')
 
     def upsert_token_transfers(self, token_transfers):
-        if not token_transfers:
+        if not token_transfers or token_transfers == []:
+            logger.warning('No token transfers to upsert')
             return
         token_transfers = self.clean_cassandra_data(token_transfers)
         self.upsert_entities(token_transfers, 'token_transfer')
 
     def upsert_internal_transactions(self, internal_transactions):
-        if not internal_transactions:
+        if not internal_transactions or internal_transactions == []:
+            logger.warning('No internal transactions to upsert')
             return
         internal_transactions = self.clean_cassandra_data(internal_transactions)
         self.upsert_entities(internal_transactions, 'internal_transactions')

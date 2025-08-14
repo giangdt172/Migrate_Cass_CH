@@ -11,7 +11,7 @@ class CassandraConfig:
     PORT = os.environ.get('CASSANDRA_PORT') or 9042
     USERNAME = os.environ.get('CASSANDRA_USERNAME')
     PASSWORD = os.environ.get('CASSANDRA_PASSWORD')
-    KEYSPACE_SUFFIX = 'blockchain_etl'
+    KEYSPACE = 'blockchain_etl'
 
 class ClickhouseConfig:
     CONNECTION_URL = os.environ.get('CLICKHOUSE_CONNECTION_URL')
@@ -19,8 +19,7 @@ class ClickhouseConfig:
     PORT = os.environ.get('CLICKHOUSE_PORT') or 9000
     USERNAME = os.environ.get('CLICKHOUSE_USERNAME')
     PASSWORD = os.environ.get('CLICKHOUSE_PASSWORD')
-    DATABASE = os.environ.get('CLICKHOUSE_DATABASE') or 'default'
-    KEYSPACE_SUFFIX = 'blockchain_etl'
+    DATABASE = os.environ.get('CLICKHOUSE_DATABASE') or 'blockchain_etl'
 
 class MonitoringConfig:
     MONITOR_ROOT_PATH = "/home/monitor/.log/"

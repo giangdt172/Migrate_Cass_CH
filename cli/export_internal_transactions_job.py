@@ -7,17 +7,22 @@ from streaming.export_internal_transactions_adapter import ExportInternalTransac
 from streaming.streamer import Streamer
 
 @click.command()
+@click.option('-i', '--input', required=True, help='Input database')
+@click.option('-o', '--output', required=True, help='Output database')
 @click.option('-d', '--db-prefix', default='', help='Database prefix')
 @click.option('-s', '--start-block', type=int, default=1, help='Starting block number')
 @click.option('-e', '--end-block', type=int, required=True, help='Ending block number')
 @click.option('-b', '--batch-size', type=int, default=1000, help='Batch size')
 @click.option('-w', '--max-workers', type=int, default=10, help='Maximum number of workers')
 @click.option('-c', '--chain-id', type=int, default=1, help='Chain ID')
-def export_internal_transactions_to_clickhouse(db_prefix, start_block, end_block, batch_size, max_workers, chain_id):
+@click.option('--tx-partitions', type=int, default=100, help='Transaction partitions')
+@click.option('--log-partitions', type=int, default=100, help='Log partitions')
+@click.option('--block-partitions', type=int, default=10000, help='Block partitions')
+def export_internal_transactions_to_clickhouse(input, output, db_prefix, start_block, end_block, batch_size, max_workers, chain_id, tx_partitions, log_partitions, block_partitions):
     logging_basic_config()
 
-    item_importer = CassandraClient(connection_url='',keyspace='blockchain_etl')
-    item_exporter = ClickhouseClient(connection_url='clickhouse+native://default:123456789@localhost:9000/default', db_prefix=db_prefix)
+    item_importer = CassandraClient(connection_url=input,keyspace_prefix=db_prefix, tx_partitions=tx_partitions, log_partitions=log_partitions, block_partitions=block_partitions)
+    item_exporter = ClickhouseClient(connection_url=output, db_prefix=db_prefix)
 
     adapter = ExportInternalTransactionsAdapter(
         batch_size=batch_size,

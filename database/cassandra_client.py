@@ -1,12 +1,8 @@
 import logging
 import sys
-import time
-import os
 
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
-from cassandra import DriverException
-from cassandra.concurrent import execute_concurrent_with_args
 from utils.parse_cassandra_connection_elements import parse_cassandra_connection_elements
 from configs.config import CassandraConfig
 from utils.db_utils import round_timestamp, round_number
@@ -14,12 +10,13 @@ from utils.db_utils import round_timestamp, round_number
 logger = logging.getLogger('Cassandra Client')
 
 class CassandraClient:
-    def __init__(self, connection_url=None, keyspace=None, block_partitions = 10000, tx_partitions = 100):
+    def __init__(self, connection_url=None, keyspace_prefix=None, block_partitions = 10000, tx_partitions = 100, log_partitions = 100):
         if not connection_url:
             connection_url = CassandraConfig.CONNECTION_URL
         
         self.block_partitions = block_partitions
         self.tx_partitions = tx_partitions
+        self.log_partitions = log_partitions
         try:
             host, port, username, password = parse_cassandra_connection_elements(connection_url)
             self.connection_url = f'{host}:{port}'
@@ -31,7 +28,10 @@ class CassandraClient:
             logger.warning(f'Failed to connect Cassandra: {connection_url}')
             logger.exception(err)
             sys.exit(1)
-        self.keyspace = keyspace
+        if keyspace_prefix:
+            self.keyspace = f'{keyspace_prefix}_{CassandraConfig.KEYSPACE}'
+        else:
+            self.keyspace = CassandraConfig.KEYSPACE
 
     def open(self):
         pass
@@ -73,10 +73,10 @@ class CassandraClient:
         return transactions
     
     def get_logs_data(self, start_block, end_block):
-        start_buck_id = round_timestamp(start_block, self.tx_partitions)
-        end_buck_id = round_timestamp(end_block, self.tx_partitions)
+        start_buck_id = round_timestamp(start_block, self.log_partitions)
+        end_buck_id = round_timestamp(end_block, self.log_partitions)
         if start_buck_id < end_buck_id:
-            string_buck_id = ','.join(set(str(i) for i in range(start_buck_id, end_buck_id + self.tx_partitions, self.tx_partitions)))
+            string_buck_id = ','.join(set(str(i) for i in range(start_buck_id, end_buck_id + self.log_partitions, self.log_partitions)))
             query = f"""
                     SELECT * FROM {self.keyspace}.logs
                     WHERE bucket_id IN ({string_buck_id})
