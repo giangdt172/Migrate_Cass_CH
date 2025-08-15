@@ -4,7 +4,6 @@ import threading
 import time
 import sys
 
-from sqlalchemy import create_engine, text
 from configs.config import ClickhouseConfig
 from clickhouse_driver import connect
 
@@ -23,7 +22,7 @@ class ClickhouseClient:
             self._local = threading.local()
             with tmp_conn.cursor() as cursor:
                 self._tmp_cursor = cursor
-                self.init_schema()
+                # self.init_schema()
             tmp_conn.close()
         except Exception as err:
             logger.warning(f'Failed to connect Clickhouse: {self.connection_url}')
