@@ -4,3 +4,4 @@ requests
 python-dotenv
 click
 logging
+prometheus_client

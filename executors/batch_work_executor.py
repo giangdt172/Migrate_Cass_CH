@@ -3,13 +3,12 @@ import time
 from executors.fail_safe_executor import FailSafeExecutor
 from executors.bounded_executor import BoundedExecutor
 from requests.exceptions import Timeout as RequestsTimeout, HTTPError, TooManyRedirects
-from web3._utils.threads import Timeout as Web3Timeout
 from utils.executors_utils import ProgressLogger, dynamic_batch_iterator
 
 class RetriableValueError(ValueError):
     pass
 
-RETRY_EXCEPTIONS = (ConnectionError, HTTPError, RequestsTimeout, TooManyRedirects, Web3Timeout, OSError,
+RETRY_EXCEPTIONS = (ConnectionError, HTTPError, RequestsTimeout, TooManyRedirects, OSError,
                     RetriableValueError)
 
 BATCH_CHANGE_COOLDOWN_PERIOD_SECONDS = 2 * 60
