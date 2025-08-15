@@ -293,4 +293,10 @@ class ClickhouseClient:
             return
         internal_transactions = self.clean_cassandra_data(internal_transactions)
         self.upsert_entities(internal_transactions, 'internal_transactions')
-
+    
+    def upsert_transaction_receipts(self, transaction_receipts):
+        if not transaction_receipts or transaction_receipts == []:
+            logger.warning('No transaction receipts to upsert')
+            return
+        transaction_receipts = self.clean_cassandra_data(transaction_receipts)
+        self.upsert_entities(transaction_receipts, 'transaction_receipts')

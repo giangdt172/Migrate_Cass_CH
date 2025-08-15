@@ -123,3 +123,20 @@ class CassandraClient:
         response = self._session.execute(query).all()
         internal_transactions = [internal_transaction._asdict() for internal_transaction in response]
         return internal_transactions
+
+    def get_transaction_receipts_data(self, numbers):
+        if not numbers:
+            return
+        bucket_ids = [str(round_timestamp(i, self.tx_partitions)) for i in numbers]
+        bucket_ids = set(bucket_ids)
+        string_buck_id = ','.join(bucket_ids)
+        string_numbers = ','.join(str(i) for i in numbers)
+        query = f"""
+                SELECT block_number, hash, receipt_contract_address, receipt_cumulative_gas_used, receipt_gas_used, receipt_root, receipt_status, transaction_index, type
+                FROM {self.keyspace}.transactions
+                WHERE bucket_id IN ({string_buck_id})
+                AND block_number IN ({string_numbers});
+            """
+        response = self._session.execute(query).all()
+        transaction_receipts = [transaction_receipt._asdict() for transaction_receipt in response]
+        return transaction_receipts
